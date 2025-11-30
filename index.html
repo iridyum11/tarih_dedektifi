@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tarih Yolculuğu: Milli Mücadele'nin İzinde</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -10,13 +10,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        /* Mobile-first fixes */
         body { 
             margin: 0; 
-            overflow: hidden; 
             background-color: #1e1e2e; 
             color: #e2e8f0; 
             font-family: 'Roboto', sans-serif; 
+            /* Fix for mobile address bar resize jank */
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
         }
+        
+        #root {
+            height: 100%;
+            width: 100%;
+        }
+
         h1, h2, h3 { font-family: 'Merriweather', serif; }
         
         .fade-in { animation: fadeIn 0.8s ease-out forwards; }
@@ -25,29 +35,39 @@
         .iframe-container {
             width: 100%;
             height: 100%;
-            border-radius: 12px;
+            border-radius: 0;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 2px solid #3f3f46;
+            background: #000;
         }
-        iframe { width: 100%; height: 100%; border: 0; }
+        
+        /* Remove border radius on mobile for full immersion */
+        @media (min-width: 768px) {
+            .iframe-container {
+                border-radius: 12px;
+                border: 2px solid #3f3f46;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            }
+        }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #27272a; }
-        ::-webkit-scrollbar-thumb { background: #52525b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #71717a; }
+        iframe { width: 100%; height: 100%; border: 0; }
 
         .glass-panel {
             background: rgba(30, 30, 46, 0.95);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         
+        @media (min-width: 768px) {
+            .glass-panel {
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 1rem;
+            }
+        }
+
         /* Loading Spinner */
         .loader {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid #f59e0b; /* Yellow-500 */
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -62,7 +82,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // --- VERİTABANI: 30 Sahnenin Tamamı ---
+   // --- VERİTABANI: 30 Sahnenin Tamamı ---
         // Veriler 'veritabanı2.xlsx' dosyasından alınmış ve düzenlenmiştir.
         // Sorular ve şıklar tarihsel bağlama göre oluşturulmuştur.
         const GAME_DATA = [
@@ -398,29 +418,30 @@
             }
         ];
 
+
         // --- BİLEŞENLER ---
 
         // 1. Giriş Ekranı
         const IntroScreen = ({ onStart }) => (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-[url('https://www.ktb.gov.tr/Resim/16609,ataturk-ve-kurtulus-savasi-muzesi-6jpg.png?0')] bg-cover bg-center relative">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[url('https://www.ktb.gov.tr/Resim/16609,ataturk-ve-kurtulus-savasi-muzesi-6jpg.png?0')] bg-cover bg-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-black/80"></div>
-                <div className="relative z-10 max-w-2xl p-8 text-center text-white fade-in">
-                    <h1 className="text-5xl font-bold mb-6 text-yellow-500">TARİH DEDEKTİFİ</h1>
-                    <h2 className="text-2xl font-light mb-8 text-gray-300">Milli Mücadele'nin İzinde</h2>
+                <div className="relative z-10 w-full max-w-2xl p-6 text-center text-white fade-in overflow-y-auto max-h-screen">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 md:mb-6 text-yellow-500 mt-8 md:mt-0">TARİH DEDEKTİFİ</h1>
+                    <h2 className="text-xl md:text-2xl font-light mb-6 md:mb-8 text-gray-300">Milli Mücadele'nin İzinde</h2>
                     
-                    <div className="bg-white/10 backdrop-blur-md p-6 rounded-xl border border-white/20 mb-8 text-left space-y-4">
-                        <p>👋 Merhaba Genç Tarihçi,</p>
-                        <p>Bu oyunda, Selanik'ten başlayıp Ankara'ya uzanan tarihi bir yolculuğa çıkacaksın. Görevin:</p>
-                        <ul className="list-disc list-inside space-y-2 pl-4 text-gray-200">
-                            <li>Verilen tarihi mekanları <strong>Google Street View</strong> ile adım adım gezmek.</li>
-                            <li>Mekanla ilgili ipuçlarını ve hikayeyi okumak.</li>
-                            <li>Sorulan sorulara doğru cevap vererek bir sonraki durağa geçmek.</li>
+                    <div className="bg-white/10 backdrop-blur-md p-4 md:p-6 rounded-xl border border-white/20 mb-8 text-left space-y-4 shadow-2xl">
+                        <p className="text-sm md:text-base">👋 Merhaba Genç Tarihçi,</p>
+                        <p className="text-sm md:text-base">Bu oyunda, Selanik'ten başlayıp Ankara'ya uzanan tarihi bir yolculuğa çıkacaksın. Görevin:</p>
+                        <ul className="list-disc list-inside space-y-2 pl-2 text-gray-200 text-sm md:text-base">
+                            <li>Tarihi mekanları <strong>Sokak Görünümü</strong> ile gezmek.</li>
+                            <li>İpuçlarını okumak ve tarihi atmosferi hissetmek.</li>
+                            <li>Soruları doğru cevaplayarak bir sonraki durağa geçmek.</li>
                         </ul>
                     </div>
 
                     <button 
                         onClick={onStart}
-                        className="px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full text-lg transition-all transform hover:scale-105 shadow-lg border-2 border-red-500 animate-pulse"
+                        className="px-8 py-3 md:px-10 md:py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full text-base md:text-lg transition-all transform hover:scale-105 shadow-lg border-2 border-red-500 animate-pulse mb-8"
                     >
                         YOLCULUĞA BAŞLA 🚀
                     </button>
@@ -432,10 +453,9 @@
         const GameScreen = ({ data, onNext, isLast }) => {
             const [showQuestion, setShowQuestion] = useState(false);
             const [selectedOption, setSelectedOption] = useState(null);
-            const [feedback, setFeedback] = useState(null); // null, 'correct', 'wrong'
+            const [feedback, setFeedback] = useState(null);
             const [iframeLoaded, setIframeLoaded] = useState(false);
 
-            // Yeni seviyeye geçildiğinde state'leri sıfırla
             useEffect(() => {
                 setShowQuestion(false);
                 setSelectedOption(null);
@@ -443,42 +463,34 @@
                 setIframeLoaded(false);
             }, [data]);
 
-            // Soruya geçiş butonu (Gezinti bittikten sonra)
-            const handleReadyToGuess = () => {
-                setShowQuestion(true);
-            };
+            const handleReadyToGuess = () => setShowQuestion(true);
 
             const handleAnswer = (option) => {
-                if (feedback === 'correct') return; // Zaten bildiyse işlem yapma
-                
+                if (feedback === 'correct') return;
                 setSelectedOption(option);
-                if (option === data.answer) {
-                    setFeedback('correct');
-                } else {
-                    setFeedback('wrong');
-                }
+                setFeedback(option === data.answer ? 'correct' : 'wrong');
             };
 
             return (
-                <div className="flex flex-col h-screen relative bg-black">
+                <div className="flex flex-col h-full w-full relative bg-black overflow-hidden">
                     {/* Üst Bilgi Paneli */}
-                    <div className="absolute top-0 left-0 right-0 z-20 p-4 pointer-events-none">
-                        <div className="bg-black/80 backdrop-blur-md text-white p-4 rounded-xl border-l-4 border-yellow-500 shadow-xl max-w-4xl mx-auto pointer-events-auto fade-in">
+                    <div className="absolute top-0 left-0 right-0 z-20 p-2 md:p-4 pointer-events-none">
+                        <div className="bg-black/80 backdrop-blur-md text-white p-3 md:p-4 rounded-xl border-l-4 border-yellow-500 shadow-xl max-w-4xl mx-auto pointer-events-auto fade-in">
                             <div className="flex justify-between items-center mb-1">
-                                <h3 className="text-yellow-400 text-xs font-bold tracking-widest uppercase">{data.unit}</h3>
-                                <span className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded">DURAK {data.id} / 30</span>
+                                <h3 className="text-yellow-400 text-[10px] md:text-xs font-bold tracking-widest uppercase truncate pr-2">{data.unit}</h3>
+                                <span className="bg-yellow-500 text-black text-[10px] md:text-xs font-bold px-2 py-1 rounded whitespace-nowrap">DURAK {data.id} / 30</span>
                             </div>
-                            <h2 className="text-2xl font-bold mb-2 text-white">{data.locationName}</h2>
-                            <p className="text-gray-300 leading-relaxed text-sm md:text-base border-t border-gray-700 pt-2 mt-2">{data.narrative}</p>
+                            <h2 className="text-lg md:text-2xl font-bold mb-1 md:mb-2 text-white leading-tight">{data.locationName}</h2>
+                            <p className="text-gray-300 leading-snug text-xs md:text-base border-t border-gray-700 pt-2 mt-1 hidden md:block">{data.narrative}</p>
                         </div>
                     </div>
 
                     {/* Street View Alanı */}
-                    <div className="flex-grow w-full h-full relative z-0">
+                    <div className="flex-grow w-full relative z-0 h-full">
                         {!iframeLoaded && (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-10">
-                                <div className="loader"></div>
-                                <span className="ml-3 text-white">Yükleniyor...</span>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-10">
+                                <div className="loader mb-2"></div>
+                                <span className="text-white text-sm">Görüntü Yükleniyor...</span>
                             </div>
                         )}
                         <div className="iframe-container h-full w-full">
@@ -492,83 +504,83 @@
                             ></iframe>
                         </div>
                         
-                        {/* "Soruya Geç" Butonu (Sadece başta görünür) */}
                         {!showQuestion && (
-                            <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 w-full px-4 flex justify-center">
+                            <div className="absolute bottom-6 md:bottom-10 left-1/2 transform -translate-x-1/2 z-20 w-full px-4 flex justify-center">
                                 <button 
                                     onClick={handleReadyToGuess}
-                                    className="flex items-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-2xl transition-all hover:scale-105 border-2 border-white/20 backdrop-blur-sm"
+                                    className="flex items-center gap-2 px-6 py-3 md:px-8 md:py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full shadow-2xl transition-all hover:scale-105 border-2 border-white/20 backdrop-blur-sm text-sm md:text-base"
                                 >
-                                    <span>🕵️ Etrafı İnceledim, Soruya Geç</span>
+                                    <span>🕵️ Soruya Geç</span>
                                 </button>
                             </div>
                         )}
                     </div>
 
-                    {/* Soru Paneli (Alttan açılır) */}
+                    {/* Soru Paneli */}
                     {showQuestion && (
-                        <div className="absolute bottom-0 left-0 right-0 z-30 p-4 flex justify-center pointer-events-none">
-                            <div className="glass-panel w-full max-w-3xl rounded-2xl p-6 shadow-2xl pointer-events-auto fade-in mb-4 max-h-[60vh] overflow-y-auto border border-gray-600">
-                                <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                                        <span>📝</span> Tarih Sorusu
-                                    </h3>
-                                    <span className={`text-xs px-3 py-1 rounded-full font-bold ${feedback === 'correct' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'}`}>
-                                        {feedback === 'correct' ? 'TAMAMLANDI' : 'BEKLENİYOR'}
-                                    </span>
-                                </div>
+                        <div className="absolute bottom-0 left-0 right-0 z-30 flex justify-center pointer-events-none h-auto max-h-[80%]">
+                            <div className="glass-panel w-full max-w-3xl rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.8)] pointer-events-auto fade-in flex flex-col max-h-full">
                                 
-                                <p className="text-lg text-gray-100 mb-6 font-medium leading-relaxed">{data.question}</p>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-                                    {data.options.map((opt, idx) => {
-                                        let btnClass = "p-4 rounded-lg text-left border border-gray-600 transition-all hover:bg-gray-700 bg-gray-800/50 text-gray-300";
-                                        // Renklendirme mantığı
-                                        if (feedback === 'correct' && opt === data.answer) btnClass = "p-4 rounded-lg text-left bg-green-600 border-green-400 text-white font-bold shadow-lg shadow-green-900/50";
-                                        else if (feedback === 'wrong' && opt === selectedOption) btnClass = "p-4 rounded-lg text-left bg-red-600 border-red-400 text-white font-bold";
-                                        else if (feedback === 'correct' && opt !== data.answer) btnClass = "p-4 rounded-lg text-left bg-gray-900/50 border-gray-800 text-gray-600 opacity-50"; 
-                                        
-                                        return (
-                                            <button 
-                                                key={idx}
-                                                onClick={() => handleAnswer(opt)}
-                                                disabled={feedback === 'correct'}
-                                                className={btnClass}
-                                            >
-                                                {opt}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Geri Bildirim ve Notlar Alanı */}
-                                {feedback && (
-                                    <div className={`mt-4 p-4 rounded-lg border ${feedback === 'correct' ? 'bg-green-900/40 border-green-500' : 'bg-red-900/40 border-red-500'} fade-in`}>
-                                        <div className="flex items-start gap-3">
-                                            <div className="text-3xl">{feedback === 'correct' ? '🎉' : '🚫'}</div>
-                                            <div className="flex-1">
-                                                <h4 className={`font-bold mb-1 ${feedback === 'correct' ? 'text-green-400' : 'text-red-400'}`}>
-                                                    {feedback === 'correct' ? 'Tebrikler, Doğru Cevap!' : 'Yanlış Cevap, Tekrar Dene!'}
-                                                </h4>
-                                                {feedback === 'correct' && (
-                                                    <div className="text-sm text-gray-200 mt-2 bg-black/20 p-3 rounded border border-white/10">
-                                                        <span className="font-bold text-yellow-400 block mb-1">TARİHÇİ NOTU:</span> 
-                                                        {data.note}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        
-                                        {feedback === 'correct' && (
-                                            <button 
-                                                onClick={onNext}
-                                                className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2"
-                                            >
-                                                {isLast ? "SONUÇLARI GÖR 🏆" : "SONRAKİ DURAĞA GEÇ 👉"}
-                                            </button>
-                                        )}
+                                <div className="overflow-y-auto pr-1 custom-scrollbar">
+                                    <div className="flex justify-between items-start mb-3 sticky top-0 bg-transparent z-10">
+                                        <h3 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                                            <span>📝</span> Soru
+                                        </h3>
+                                        <span className={`text-[10px] md:text-xs px-2 py-1 rounded-full font-bold ${feedback === 'correct' ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300'}`}>
+                                            {feedback === 'correct' ? 'BİLİNDİ' : 'BEKLENİYOR'}
+                                        </span>
                                     </div>
-                                )}
+                                    
+                                    <p className="text-sm md:text-lg text-gray-100 mb-4 font-medium leading-relaxed">{data.question}</p>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 mb-4">
+                                        {data.options.map((opt, idx) => {
+                                            let btnClass = "p-3 md:p-4 rounded-lg text-left border border-gray-600 transition-all bg-gray-800/50 text-gray-300 text-sm md:text-base active:scale-95 touch-manipulation";
+                                            if (feedback === 'correct' && opt === data.answer) btnClass = "p-3 md:p-4 rounded-lg text-left bg-green-600 border-green-400 text-white font-bold shadow-lg";
+                                            else if (feedback === 'wrong' && opt === selectedOption) btnClass = "p-3 md:p-4 rounded-lg text-left bg-red-600 border-red-400 text-white font-bold";
+                                            else if (feedback === 'correct' && opt !== data.answer) btnClass = "p-3 md:p-4 rounded-lg text-left bg-gray-900/50 border-gray-800 text-gray-600 opacity-50"; 
+                                            
+                                            return (
+                                                <button 
+                                                    key={idx}
+                                                    onClick={() => handleAnswer(opt)}
+                                                    disabled={feedback === 'correct'}
+                                                    className={btnClass}
+                                                >
+                                                    {opt}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {feedback && (
+                                        <div className={`mt-2 p-3 md:p-4 rounded-lg border ${feedback === 'correct' ? 'bg-green-900/40 border-green-500' : 'bg-red-900/40 border-red-500'} fade-in`}>
+                                            <div className="flex flex-col md:flex-row items-start gap-3">
+                                                <div className="text-2xl md:text-3xl self-center md:self-start">{feedback === 'correct' ? '🎉' : '🚫'}</div>
+                                                <div className="flex-1 w-full">
+                                                    <h4 className={`font-bold mb-1 text-sm md:text-base ${feedback === 'correct' ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {feedback === 'correct' ? 'Tebrikler!' : 'Yanlış Cevap!'}
+                                                    </h4>
+                                                    {feedback === 'correct' && (
+                                                        <div className="text-xs md:text-sm text-gray-200 mt-2 bg-black/30 p-3 rounded border border-white/10">
+                                                            <span className="font-bold text-yellow-400 block mb-1">BİLGİ NOTU:</span> 
+                                                            {data.note}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            
+                                            {feedback === 'correct' && (
+                                                <button 
+                                                    onClick={onNext}
+                                                    className="mt-4 w-full py-3 md:py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition-all shadow-lg flex items-center justify-center gap-2 text-sm md:text-base active:scale-95"
+                                                >
+                                                    {isLast ? "BİTİR 🏆" : "SONRAKİ DURAK 👉"}
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -578,23 +590,23 @@
 
         // 3. Bitiş Ekranı
         const EndScreen = ({ onRestart }) => (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-[#111] text-white p-8 text-center bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/21/An%C4%B1tkabir_Night.jpg')] bg-cover bg-center relative">
-                <div className="absolute inset-0 bg-black/80"></div>
-                <div className="relative z-10 max-w-lg bg-gray-900/90 p-8 rounded-2xl border border-gray-700 shadow-2xl fade-in backdrop-blur-md">
-                    <div className="text-6xl mb-6">🇹🇷</div>
-                    <h2 className="text-4xl font-bold mb-4 text-yellow-500">GÖREV TAMAMLANDI!</h2>
-                    <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                        Tarih yolculuğunu başarıyla tamamladın. Selanik'ten başlayıp Ankara'ya, Cumhuriyet'e uzanan bu kutlu yolda 30 önemli durağı keşfettin.
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[#111] text-white p-6 text-center bg-[url('https://upload.wikimedia.org/wikipedia/commons/2/21/An%C4%B1tkabir_Night.jpg')] bg-cover bg-center relative">
+                <div className="absolute inset-0 bg-black/85"></div>
+                <div className="relative z-10 w-full max-w-lg bg-gray-900/90 p-6 md:p-8 rounded-2xl border border-gray-700 shadow-2xl fade-in backdrop-blur-md overflow-y-auto max-h-screen">
+                    <div className="text-5xl md:text-6xl mb-4 md:mb-6">🇹🇷</div>
+                    <h2 className="text-3xl md:text-4xl font-bold mb-4 text-yellow-500">GÖREV TAMAMLANDI!</h2>
+                    <p className="text-lg md:text-xl text-gray-300 mb-6 md:mb-8 leading-relaxed">
+                        Tarih yolculuğunu başarıyla tamamladın. Selanik'ten Ankara'ya, Cumhuriyet'e uzanan bu kutlu yolda 30 önemli durağı keşfettin.
                     </p>
                     <div className="bg-white/5 p-4 rounded-lg border border-white/10 mb-8">
-                        <p className="text-md text-gray-300 italic font-serif">
+                        <p className="text-sm md:text-md text-gray-300 italic font-serif">
                             "Tarihini bilmeyen milletler, yok olmaya mahkumdur." 
                         </p>
-                        <p className="text-right text-sm text-yellow-500 mt-2 font-bold">- Mustafa Kemal Atatürk</p>
+                        <p className="text-right text-xs md:text-sm text-yellow-500 mt-2 font-bold">- Mustafa Kemal Atatürk</p>
                     </div>
                     <button 
                         onClick={onRestart}
-                        className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-black transition-all w-full"
+                        className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white hover:text-black transition-all w-full text-sm md:text-base active:scale-95"
                     >
                         YOLCULUĞU TEKRARLA 🔄
                     </button>
@@ -621,12 +633,12 @@
             };
 
             return (
-                <>
+                <div className="h-full w-full">
                     {gameState === 'intro' && <IntroScreen onStart={startGame} />}
                     
                     {gameState === 'playing' && (
                         <GameScreen 
-                            key={currentLevel} // Key değişince bileşen sıfırlanır ve yeni veri yüklenir
+                            key={currentLevel}
                             data={GAME_DATA[currentLevel]} 
                             onNext={nextLevel}
                             isLast={currentLevel === GAME_DATA.length - 1}
@@ -634,7 +646,7 @@
                     )}
 
                     {gameState === 'end' && <EndScreen onRestart={() => setGameState('intro')} />}
-                </>
+                </div>
             );
         };
 
